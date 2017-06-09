@@ -1,0 +1,211 @@
+\documentclass{article}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\usepackage{geometry}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{mathtools}
+\usepackage{graphicx}
+\usepackage{rotating}
+\usepackage{xcolor}
+\usepackage[inline]{enumitem}
+
+%\usepackage{algorithm}
+%\usepackage[noend]{algpseudocode}
+%\usepackage{algorithmicx}
+%\usepackage{algorithm2e}
+
+%\usepackage[authordate,bibencoding=auto,strict,backend=biber,natbib]{biblatex-chicago}
+%\usepackage[round]{natbib}   % omit 'round' option if you prefer square brackets
+%\bibliographystyle{plainnat}
+
+\usepackage{tikz}
+\usepackage{pgfplots}
+\pgfplotsset{width=7cm,compat=1.8}
+\definecolor{darkgreen}{RGB}{0,127,0}
+
+\definecolor{wmle}{RGB}{0,0,0}
+\definecolor{wmlei}{RGB}{230,159,0}
+\definecolor{wave}{RGB}{86,180,233}
+\definecolor{wboot}{RGB}{204,121,167}
+\definecolor{wowa}{RGB}{0,158,115}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\newtheorem{cor}{Corollary}
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}{Lemma}
+\newtheorem{assumption}{Condition}
+\newtheorem{defn}{Definition}
+
+\DeclareMathOperator*{\argmin}{arg\,min}
+\DeclareMathOperator*{\argmax}{arg\,max}
+\DeclareMathOperator*{\vecspan}{span}
+\DeclareMathOperator*{\affspan}{aff}
+\DeclareMathOperator*{\subG}{subG}
+\DeclareMathOperator*{\tr}{tr}
+\DeclareMathOperator*{\E}{\mathbb{E}}
+
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\trans}[1]{{#1}^{\top}}
+
+\newcommand{\W}{\mathcal{W}}
+\newcommand{\X}{\mathcal{X}}
+\newcommand{\Y}{\mathcal{Y}}
+\newcommand{\Z}{Z}
+
+\newcommand{\w}{W}
+\newcommand{\what}{\hat\w}
+\newcommand{\x}{\mathbf{x}}
+\newcommand{\y}{y}
+
+\newcommand{\loss}{\ell}
+\newcommand{\reg}{r}
+
+%\newcommand{\plots}[1]{}
+\newcommand{\plots}[1]{#1}
+\newcommand{\ignore}[1]{}
+\newcommand{\fixme}[1]{\textbf{FIXME:} {#1}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{filecontents}{paper.bib}
+
+@inproceedings{cortes2014deep,
+  title={Deep boosting},
+  author={Cortes, Corinna and Mohri, Mehryar and Syed, Umar},
+  booktitle={Proceedings of the 31st International Conference on Machine Learning (ICML-14)},
+  pages={1179--1187},
+  year={2014}
+}
+
+@inproceedings{kuznetsov2014multi,
+  title={Multi-class deep boosting},
+  author={Kuznetsov, Vitaly and Mohri, Mehryar and Syed, Umar},
+  booktitle={Advances in Neural Information Processing Systems},
+  pages={2501--2509},
+  year={2014}
+}
+
+@article{zhang2016understanding,
+  title={Understanding deep learning requires rethinking generalization},
+  author={Zhang, Chiyuan and Bengio, Samy and Hardt, Moritz and Recht, Benjamin and Vinyals, Oriol},
+  journal={arXiv preprint arXiv:1611.03530},
+  year={2016}
+}
+
+\end{filecontents}
+\immediate\write18{bibtex paper}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\title{Deep Learning Works because it's Shallow}
+
+\begin{document}
+
+%\maketitle
+\begin{center}
+    \LARGE
+    Deep learning only works because it's shallow
+\end{center}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%\begin{abstract}
+%\end{abstract}
+%
+%\section{}
+
+%Assume our deep neural network has $p$ layers.
+%Each layer $i$ is a function $f_i : \Y_{i-1} \to \Y_i$.
+%The overall network is the function $f = f_p \cdot
+%\begin{align}
+    %\yhat_0 &= \sigma(\w_0\x) \\
+    %\yhat_i &= \sigma(\w_i\yhat_{i-1})
+%\end{align}
+
+\subsection{Notation for layered deep networks}
+
+Assume our deep neural network has $p$ layers.
+For each layer $i\in[p]$, there is an associated dimension $d_i\in\N$,
+activation function $\sigma_i : \R^{d_i} \to \R^{d_i}$, and
+weight matrix $\w_i : \R^{d_i\times d_{i-1}}$.
+The input to the network is a vector $\x\in\R^{d_0}$.
+The output of layer $i$ is then recursively given by
+\begin{equation}
+    f_i(\x) : \R^{d_i} = 
+    \begin{cases}
+        \x & i=0 \\
+        \sigma_i(\w_i f_{i-1}(\x)) & i>0 
+    \end{cases}
+    .
+\end{equation}
+We let $\w=\{\w_1,...,\w_p\}$ denote the set of model parameters for all layers.
+We train $\w$ on a dataset $\Z \subset \R^{d_0}\times\Y$ using the formula
+\begin{equation}
+    \w = \argmin_{\w} \sum_{(\x,\y)\in\Z}\loss(\y,f_p(\x)) + \reg(\w),
+\end{equation}
+where $\loss : \Y\times\R^{d_p} \to \R$ is our loss function and $\reg : \W\to\R$ is a regularization term.
+
+\subsection{The shallow construction}
+
+For any deep neural network, we can define a canonical shallow network by adding connections from every layer $i<p$ to the output layer $p$.
+Formally, we create a new weight matrix $\w_{i,p} : \R^{d_i\times d_p}$ for each layer $i<p$.
+Then the new network is given by
+\begin{align}
+    g_p(\x) : \R^{d_p} &= 
+    %\sigma_i(\w_i f_{i-1}(\x)) 
+    f_p(\x)
+    +
+    \sum_{i=1}^{p-1}
+    \sigma_{i,p}(\w_{i,p} f_{i-1}(\x))
+    .
+%\end{equation}
+%\begin{equation}
+    %g_p(\x) : \R^{d_p} = 
+    \\&=
+    \sum_{i=1}^{p}
+    \sigma_{i,p}(\w_{i,p} f_{i-1}(\x))
+    .
+\end{align}
+If we extend this procedure to make all layers shallow (rather than just the last layer), we get
+\begin{equation}
+    g_i(\x) : \R^{d_i} = 
+    \begin{cases}
+        \x & i=0 \\
+        \displaystyle
+        \sum_{j=1}^{i-1}\sigma_{j,i}(\w_{j,i} g_{i-1}(\x)) & i>0 
+    \end{cases}
+    .
+\end{equation}
+We can solve for the new $\w$ directly using standard optimization techniques.
+These are likely to be slow, however, as we've greatly increased the number of parameters to learn
+(linearly in the first case; quadratically in the second).
+An alternative is to first train the $f_i$, then train the $g_i$ based on the $f_i$.
+Specifically, solve
+\begin{equation}
+    \w = \argmin_\w \sum_{(\x,y)\in\Z} \loss(f_p(\x),g_p(\x)),
+\end{equation}
+where we initialize the 
+\begin{equation}
+    \w_{i,j} =
+    \begin{cases}
+        \w_i & j=i+1 \\
+        0 & \text{otherwise}
+    \end{cases}
+    ,
+\end{equation}
+and (importantly) do not update the values of $\w_i$ in each iteration.   
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\clearpage
+\bibliographystyle{plainnat}
+\bibliography{paper}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\end{document}

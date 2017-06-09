@@ -1,0 +1,16 @@
+*.aux
+*.bbl
+*.bib
+*.blg
+*.log
+*.pdf
+
+*.swp
+*.swo
+
+*.pyc
+
+*.gz
+
+log
+output
