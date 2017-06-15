@@ -52,6 +52,10 @@
 \newcommand{\R}{\mathbb{R}}
 \newcommand{\trans}[1]{{#1}^{\top}}
 
+\newcommand{\ltwo}[1]{\lVert {#1} \rVert_2}
+\newcommand{\set}{\mathcal}
+\renewcommand{\vec}{\mathbf}
+
 \newcommand{\W}{\mathcal{W}}
 \newcommand{\X}{\mathcal{X}}
 \newcommand{\Y}{\mathcal{Y}}
@@ -149,6 +153,27 @@ We train $\w$ on a dataset $\Z \subset \R^{d_0}\times\Y$ using the formula
     \w = \argmin_{\w} \sum_{(\x,\y)\in\Z}\loss(\y,f_p(\x)) + \reg(\w),
 \end{equation}
 where $\loss : \Y\times\R^{d_p} \to \R$ is our loss function and $\reg : \W\to\R$ is a regularization term.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{The linear construction}
+
+Let the data space $\set X$ be 
+\begin{equation}
+    \set X = \{ \vec x : \vec x\in\R^d, \ltwo{\vec x} \le b, \vec x_i \ge 0\}
+    .
+\end{equation}
+That is, each vector's size is bounded by $b$ and each component is positive.
+Use the relu nonlinearity 
+\begin{equation}
+    \sigma(x) = \max\{0,x\}
+    .
+\end{equation}
+Then whenever all the weights are non-negative,
+the function $f^p$ defined by the network is linear.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \subsection{The shallow construction}
 
